@@ -77,7 +77,6 @@ DingTalkStrategy.prototype.authenticate = function (req, options) {
 
   // 获取code授权成功
   if (req.query && req.query.code) {
-    var queryCode = req.query.code
     function verified(err, user, info) {
       if (err) {
         return self.error(err)
@@ -87,168 +86,23 @@ DingTalkStrategy.prototype.authenticate = function (req, options) {
       }
       self.success(user, info)
     }
-
-    try {
-      let settings = await $promise
-      // 1. gettoken
-      // https://oapi.dingtalk.com/sns/gettoken?appid=APPID&appsecret=APPSECRET
-      let tokenRes = await axios.get(`https://oapi.dingtalk.com/sns/gettoken?appid=${settings.id}&appsecret=${settings.secret}`)
-      let { access_token, errcode, errmsg } = tokenRes.data
-      if (errcode) {
-        throw new Error(errmsg || '')
+    getUserInfo(req.query.code, function(
+      err,
+      req,
+      access_token,
+      user_info,
+      verified
+    ) {
+      if (err) {
+        return self.error(error)
       }
-      // let signature = ''
-      // let userRes = await axios.post(`https://oapi.dingtalk.com/sns/getuserinfo_bycode?accessKey=${settings.id}&timestamp=${new Date().valueOf()}&signature=${signature}`, )
-      // 2. 获取永久授权码
-      let persistentRes = await axios.post(`https://oapi.dingtalk.com/sns/get_persistent_code?access_token=${access_token}`, {
-        tmp_auth_code: queryCode
-      })
-      console.log(persistentRes)
-      let { errmsg: perrmsg, openid, errcode: perrcode, persistent_code } = persistentRes.data
-      if (perrcode) {
-        throw new Error(perrmsg || '')
-      }
-
-      // 3. 获取用户授权的SNS_TOKEN
-      let snsRes = await axios.post(`https://oapi.dingtalk.com/sns/get_sns_token?access_token=${access_token}`, {
-        openid,
-        persistent_code
-      })
-      let { errmsg: serrmsg, errcode: serrcode, sns_token } = snsRes.data
-      if (serrcode) {
-        throw new Error(serrmsg || '')
-      }
-
-      // 4. 那用户信息
-      let userinfoRes = await axios.get(`https://oapi.dingtalk.com/sns/getuserinfo?sns_token=${sns_token}`)
-      let { errmsg: uerrmsg, errcode: uerrcode, user_info, unionid } = userinfoRes.data
-      // res.json({ code: 200, data: { access_token, queryCode, openid, persistent_code, sns_token, snsRes: snsRes.data, userinfoRes: userinfoRes.data }})
-      if (uerrcode) {
-        throw new Error(uerrmsg || '')
-      }
-
-      // 下面的接口都没有权限
-      // 获取unionid
-      // let unionidRes = await axios.get(`https://oapi.dingtalk.com/user/getUseridByUnionid?access_token=${access_token}&unionid=${user_info.unionid}`)
-      // let { errmsg: unierrmsg, errcode: unierrcode, userid } = unionidRes.data
-      // // res.json({ code: 200, data: { access_token, queryCode, openid, persistent_code, sns_token, snsRes: snsRes.data, userinfoRes: userinfoRes.data,  userid, unionidRes: unionidRes.data}})
-      // if (unierrcode) {
-      //   throw new Error(unierrmsg || '')
-      // }
-
-      // // 获取用户信息
-      // let userRes = await axios.get(`https://oapi.dingtalk.com/user/get?access_token=${access_token}&userid=${userid}`)
-      // let { errmsg: usererrmsg, errcode: usererrcode, ...user_data } = userRes.data
-      // // res.json({ code: 200, data: { access_token, queryCode, openid, persistent_code, sns_token, snsRes: snsRes.data, userinfoRes: userinfoRes.data }})
-      // if (usererrcode) {
-      //   throw new Error(usererrmsg || '')
-      // }
-
-      // user_data的结构
-      // dingId: "$:LWCP_v1:$pUvHunDQAYkBLYhkAAxkviV+3FBxHxe2"
-      // nick: "Eric"
-      // openid: "fuumyxdMFqFyygpZakODGwiEiE"
-      // unionid: "TiPdSzu8HLMv7IPlQEUBYRwiEiE"
-
-      // res.json({ code: 200, data: user_info})
-      // DingTalk.handleLogin(req, user_info)
       self._verify(
         req,
         params['access_token'],
         user_info,
         verified
       )
-      // res.redirect(nconf.get('relative_path') + '/' + user_info.nick)
-    } catch (error) {
-      console.log(error.message)
-      res.json({ code: 417, data: error.message})
-      return self.error(error)
-    }
-    // self._oauth.getAccessToken(code, function (err, response) {
-    //   // 校验完成信息
-    //   function verified(err, user, info) {
-    //     if (err) {
-    //       return self.error(err)
-    //     }
-    //     if (!user) {
-    //       return self.fail(info)
-    //     }
-    //     self.success(user, info)
-    //   }
-
-    //   if (err) {
-    //     return self.error(err)
-    //   }
-
-    //   var params = response.data
-
-    //   if (~params.scope.indexOf('snsapi_base')) {
-    //     var profile = {
-    //       openid: params['openid'],
-    //       unionid: params['unionid'],
-    //     }
-    //     try {
-    //       if (self._passReqToCallback) {
-    //         self._verify(
-    //           req,
-    //           params['access_token'],
-    //           params['refresh_token'],
-    //           profile,
-    //           params['expires_in'],
-    //           verified
-    //         )
-    //       } else {
-    //         self._verify(
-    //           params['access_token'],
-    //           params['refresh_token'],
-    //           profile,
-    //           params['expires_in'],
-    //           verified
-    //         )
-    //       }
-    //     } catch (ex) {
-    //       return self.error(ex)
-    //     }
-    //   } else {
-    //     self._oauth.getUser(
-    //       {
-    //         openid: params['openid'],
-    //         lang: self._lang,
-    //       },
-    //       function (err, profile) {
-    //         if (err) {
-    //           return self.error(err)
-    //         }
-
-    //         // merge params
-    //         params = extend(params, profile)
-
-    //         try {
-    //           if (self._passReqToCallback) {
-    //             self._verify(
-    //               req,
-    //               params['access_token'],
-    //               params['refresh_token'],
-    //               profile,
-    //               params['expires_in'],
-    //               verified
-    //             )
-    //           } else {
-    //             self._verify(
-    //               params['access_token'],
-    //               params['refresh_token'],
-    //               profile,
-    //               params['expires_in'],
-    //               verified
-    //             )
-    //           }
-    //         } catch (ex) {
-    //           return self.error(ex)
-    //         }
-    //       }
-    //     )
-    //   }
-    // })
+    })
   } else {
     console.log('------------------ strategy else')
     // var defaultURL = req.protocol + '://' + req.get('Host') + req.originalUrl
@@ -267,4 +121,92 @@ DingTalkStrategy.prototype.authenticate = function (req, options) {
   }
 }
 
+
+async function getUserInfo(code, callback) {
+  var queryCode = code
+
+  try {
+    let settings = await $promise
+    // 1. gettoken
+    // https://oapi.dingtalk.com/sns/gettoken?appid=APPID&appsecret=APPSECRET
+    let tokenRes = await axios.get(`https://oapi.dingtalk.com/sns/gettoken?appid=${settings.id}&appsecret=${settings.secret}`)
+    let { access_token, errcode, errmsg } = tokenRes.data
+    if (errcode) {
+      throw new Error(errmsg || '')
+    }
+    // let signature = ''
+    // let userRes = await axios.post(`https://oapi.dingtalk.com/sns/getuserinfo_bycode?accessKey=${settings.id}&timestamp=${new Date().valueOf()}&signature=${signature}`, )
+    // 2. 获取永久授权码
+    let persistentRes = await axios.post(`https://oapi.dingtalk.com/sns/get_persistent_code?access_token=${access_token}`, {
+      tmp_auth_code: queryCode
+    })
+    console.log(persistentRes)
+    let { errmsg: perrmsg, openid, errcode: perrcode, persistent_code } = persistentRes.data
+    if (perrcode) {
+      throw new Error(perrmsg || '')
+    }
+
+    // 3. 获取用户授权的SNS_TOKEN
+    let snsRes = await axios.post(`https://oapi.dingtalk.com/sns/get_sns_token?access_token=${access_token}`, {
+      openid,
+      persistent_code
+    })
+    let { errmsg: serrmsg, errcode: serrcode, sns_token } = snsRes.data
+    if (serrcode) {
+      throw new Error(serrmsg || '')
+    }
+
+    // 4. 那用户信息
+    let userinfoRes = await axios.get(`https://oapi.dingtalk.com/sns/getuserinfo?sns_token=${sns_token}`)
+    let { errmsg: uerrmsg, errcode: uerrcode, user_info, unionid } = userinfoRes.data
+    // res.json({ code: 200, data: { access_token, queryCode, openid, persistent_code, sns_token, snsRes: snsRes.data, userinfoRes: userinfoRes.data }})
+    if (uerrcode) {
+      throw new Error(uerrmsg || '')
+    }
+
+    // 下面的接口都没有权限
+    // 获取unionid
+    // let unionidRes = await axios.get(`https://oapi.dingtalk.com/user/getUseridByUnionid?access_token=${access_token}&unionid=${user_info.unionid}`)
+    // let { errmsg: unierrmsg, errcode: unierrcode, userid } = unionidRes.data
+    // // res.json({ code: 200, data: { access_token, queryCode, openid, persistent_code, sns_token, snsRes: snsRes.data, userinfoRes: userinfoRes.data,  userid, unionidRes: unionidRes.data}})
+    // if (unierrcode) {
+    //   throw new Error(unierrmsg || '')
+    // }
+
+    // // 获取用户信息
+    // let userRes = await axios.get(`https://oapi.dingtalk.com/user/get?access_token=${access_token}&userid=${userid}`)
+    // let { errmsg: usererrmsg, errcode: usererrcode, ...user_data } = userRes.data
+    // // res.json({ code: 200, data: { access_token, queryCode, openid, persistent_code, sns_token, snsRes: snsRes.data, userinfoRes: userinfoRes.data }})
+    // if (usererrcode) {
+    //   throw new Error(usererrmsg || '')
+    // }
+
+    // user_data的结构
+    // dingId: "$:LWCP_v1:$pUvHunDQAYkBLYhkAAxkviV+3FBxHxe2"
+    // nick: "Eric"
+    // openid: "fuumyxdMFqFyygpZakODGwiEiE"
+    // unionid: "TiPdSzu8HLMv7IPlQEUBYRwiEiE"
+
+    // res.json({ code: 200, data: user_info})
+    
+    callback(0,
+      req,
+      params['access_token'],
+      user_info,
+      verified
+    )
+    // self._verify(
+    //   req,
+    //   params['access_token'],
+    //   user_info,
+    //   verified
+    // )
+    // res.redirect(nconf.get('relative_path') + '/' + user_info.nick)
+  } catch (error) {
+    console.log(error.message)
+    // res.json({ code: 417, data: error.message})
+    // return self.error(error)
+    callback(100, error)
+  }
+} 
 module.exports = DingTalkStrategy

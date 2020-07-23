@@ -3,52 +3,9 @@
     "name": "NodeBB dingtalk",
     "description": "NodeBB Plugin that allows users to login/register via their dingtalk account.",
     "library": "./library.js",
-    "hooks": [
-        {
-            "hook": "static:app.load",
-            "method": "init"
-        },
-        {
-            "hook": "filter:auth.init",
-            "method": "getStrategy"
-        },
-        {
-            "hook": "static:user.delete",
-            "method": "deleteUserData"
-        },
-        {
-            "hook": "filter:auth.list",
-            "method": "getAssociation"
-        },
-        {
-            "hook": "filter:admin.header.build",
-            "method": "addMenuItem"
-        },
-        {
-            "hook": "filter:user.listPictures",
-            "method": "list"
-        },
-        {
-            "hook": "filter:user.getPicture",
-            "method": "get"
-        },
-        {
-            "hook": "filter:register.interstitial",
-            "method": "prepareInterstitial"
-        },
-        {
-            "hook": "filter:user.whitelistFields",
-            "method": "appendUserHashWhitelist"
-        }
-    ],
-    "staticDirs": {
-        "static": "./static"
-    },
-    "templates": "./static/templates",
-    "less": [
-        "./static/less/style.less"
-    ],
-    "acpScripts": [
-        "./static/lib/admin.js"
-    ]
+	"hooks": [
+		{ "hook": "filter:auth.init", "method": "getStrategy" },
+		{ "hook": "filter:user.delete", "method": "deleteUserData" }
+	],
+	"templates": "./templates"
 }

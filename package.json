@@ -20,6 +20,8 @@
   "dependencies": {
     "axios": "^0.19.2",
     "passport": "^0.3.0",
+    "passport-dingding": "^1.0.7",
+    "passport-dingtalk": "0.0.2",
     "passport-strategy": "^1.0.0",
     "wechat-oauth": "^1.0.1",
     "xtend": "^4.0.0"
