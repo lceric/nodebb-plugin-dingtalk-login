@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-dingtalk-login",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "NodeBB 钉钉扫码登录插件",
   "main": "library.js",
   "keywords": [

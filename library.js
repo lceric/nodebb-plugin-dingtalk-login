@@ -89,10 +89,11 @@ Dingtalk.getStrategy = function (strategies, callback) {
               const email = profile.openid + '@kaike.la'
               let headimgurl = profile.headimgurl || ''
               const picture = headimgurl.replace('http://', 'https://')
-              let { staff_id: staffid } = await Dingtalk.getProfile(
-                profile.openid,
-                profile.dingId
-              )
+              let staffid = ''
+              // let { staff_id: staffid } = await Dingtalk.getProfile(
+              //   profile.openid,
+              //   profile.dingId
+              // )
               Dingtalk.login(
                 profile.openid,
                 profile.nick,
@@ -272,6 +273,7 @@ Dingtalk.login = function (
       Dingtalk.storeTokens(uid, accessToken, refreshToken)
       // user.setUserField(uid, 'dingpic', avatar) // update avatar
       user.setUserField(uid, 'staffid', staffid) // update staffid
+      user.setUserField(uid, 'username', nick) // update username
       callback(null, {
         uid: uid,
       })
