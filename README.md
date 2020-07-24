@@ -1,9 +1,9 @@
-## NodeBB DingDing Login
+## Nodebb Plugin Dingtalk Login
 
 NodeBB 钉钉二维码登录插件。
 ## 安装
 
-    $ npm install nodebb-plugin-dingtalk
+    $ npm install nodebb-plugin-dingtalk-login
     
 ## 使用
 
