@@ -17,7 +17,7 @@ const authenticationController = module.parent.require('./controllers/authentica
 var Dingtalk = {};
 
 Dingtalk.appendUserHashWhitelist = function (data, callback) {
-  data.whitelist.push('dingid')
+  data.whitelist.push('openid')
   return setImmediate(callback, null, data)
 }
 
@@ -53,8 +53,8 @@ Dingtalk.getStrategy = function(strategies, callback) {
               return done(new Error('You have binded a Dingtalk account.If you want to bind another one ,please unbind your account.'), false)
             } else {
               winston.info('[SSO-Dingtalk-web]User is logged.Binding.')
-              user.setUserField(req.user.uid, 'dingid', profile.openid)
-              db.setObjectField('dingid:uid', profile.openid, req.user.uid)
+              user.setUserField(req.user.uid, 'openid', profile.openid)
+              db.setObjectField('openid:uid', profile.openid, req.user.uid)
               winston.info(`[SSO-Dingtalk-web] ${req.user.uid} is binded.(openid is ${profile.openid} and nickname is ${profile.nick}`)
 
               // Set Picture
@@ -75,7 +75,7 @@ Dingtalk.getStrategy = function(strategies, callback) {
             if (email.endsWith('@kaike.la')) {
               req.session.registration = req.session.registration || {}
               req.session.registration.uid = user.uid
-              req.session.registration.dingid = profile.openid
+              req.session.registration.openid = profile.openid
             }
             authenticationController.onSuccessfulLogin(req, user.uid, function (err) {
               if (err) {
@@ -101,8 +101,8 @@ Dingtalk.getStrategy = function(strategies, callback) {
 
   callback(null, strategies);
 };
-Dingtalk.hasDingtalkId = function (dingid, callback) {
-  db.isObjectField('dingid:uid', dingid, function (err, res) {
+Dingtalk.hasDingtalkId = function (openid, callback) {
+  db.isObjectField('openid:uid', openid, function (err, res) {
     if (err) {
       return callback(err)
     }
@@ -110,8 +110,8 @@ Dingtalk.hasDingtalkId = function (dingid, callback) {
   })
 }
 
-Dingtalk.getUidByDingtalkId = function (dingid, callback) {
-  db.getObjectField('dingid:uid', dingid, function (err, uid) {
+Dingtalk.getUidByDingtalkId = function (openid, callback) {
+  db.getObjectField('openid:uid', openid, function (err, uid) {
     if (err) {
       callback(err)
     } else {
@@ -127,8 +127,8 @@ Dingtalk.storeTokens = function (uid, accessToken, refreshToken) {
   user.setUserField(uid, 'dingtalkrefreshtoken', refreshToken)
 }
 
-Dingtalk.login = function(dingid, nick, email, avatar, accessToken, refreshToken, callback) {
-  Dingtalk.getUidByDingtalkId(dingid, function (err, uid) {
+Dingtalk.login = function(openid, nick, email, avatar, accessToken, refreshToken, callback) {
+  Dingtalk.getUidByDingtalkId(openid, function (err, uid) {
     if (err) {
       return callback(err)
     }
@@ -142,8 +142,8 @@ Dingtalk.login = function(dingid, nick, email, avatar, accessToken, refreshToken
     } else {
       const success = function (uid) {
         // Save dingchat-specific information to the user
-        user.setUserField(uid, 'dingid', dingid)
-        db.setObjectField('dingid:uid', dingid, uid)
+        user.setUserField(uid, 'openid', openid)
+        db.setObjectField('openid:uid', openid, uid)
         const autoConfirm = 1
         user.setUserField(uid, 'email:confirmed', autoConfirm)
 
@@ -158,7 +158,7 @@ Dingtalk.login = function(dingid, nick, email, avatar, accessToken, refreshToken
         }
 
         Dingtalk.storeTokens(uid, accessToken, refreshToken)
-        winston.info('[sso-dingtalk-web]uid:' + uid + 'is created successfully.(openid is ' + dingid + ', nickname is ' + nick + ')')
+        winston.info('[sso-dingtalk-web]uid:' + uid + 'is created successfully.(openid is ' + openid + ', nickname is ' + nick + ')')
         callback(null, {
           uid: uid
         })
@@ -167,7 +167,7 @@ Dingtalk.login = function(dingid, nick, email, avatar, accessToken, refreshToken
       user.create({ username: nick, email: email }, function (err, uid) {
         if (err) {
           // If username is invalid , just use ding- + openid as user's username
-          user.create({ username: 'ding-' + dingid, email: email }, function (err, uid) {
+          user.create({ username: 'ding-' + openid, email: email }, function (err, uid) {
             if (err) {
               return callback(err)
             } else {
@@ -179,7 +179,7 @@ Dingtalk.login = function(dingid, nick, email, avatar, accessToken, refreshToken
       })
     }
   })
-  // Dingtalk.getUidByDingtalkId(dingid, function(err, uid) {
+  // Dingtalk.getUidByDingtalkId(openid, function(err, uid) {
   //   if (err) {
   //     return callback(err);
   //   }
@@ -199,8 +199,8 @@ Dingtalk.login = function(dingid, nick, email, avatar, accessToken, refreshToken
   //       }
 
   //       // Save Dingtalk-specific information to the user
-  //       user.setUserField(uid, 'dingid', dingid);
-  //       db.setObjectField('dingid:uid', dingid, uid);
+  //       user.setUserField(uid, 'openid', openid);
+  //       db.setObjectField('openid:uid', openid, uid);
 
   //       callback(null, {
   //         uid: uid
@@ -240,8 +240,8 @@ Dingtalk.init = function(data, callback) {
   callback()
 }
 
-Dingtalk.getUidByDingtalkId = function(dingid, callback) {
-  db.getObjectField('dingid:uid', dingid, function(err, uid) {
+Dingtalk.getUidByDingtalkId = function(openid, callback) {
+  db.getObjectField('openid:uid', openid, function(err, uid) {
     if (err) {
       return callback(err);
     }
@@ -251,9 +251,9 @@ Dingtalk.getUidByDingtalkId = function(dingid, callback) {
 
 Dingtalk.deleteUserData = function(uid, callback) {
   async.waterfall([
-    async.apply(user.getUserField, uid, 'dingid'),
+    async.apply(user.getUserField, uid, 'openid'),
     function(oAuthIdToDelete, next) {
-      db.deleteObjectField('dingid:uid', oAuthIdToDelete, next);
+      db.deleteObjectField('openid:uid', oAuthIdToDelete, next);
     }
   ], function(err) {
     if (err) {
