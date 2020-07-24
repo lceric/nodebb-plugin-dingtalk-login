@@ -9,6 +9,10 @@
     {
       "hook": "static:app.load",
       "method": "init"
+    },
+    {
+        "hook": "filter:user.whitelistFields",
+        "method": "appendUserHashWhitelist"
     }
   ],
   "templates": "./templates"
