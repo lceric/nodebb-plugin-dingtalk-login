@@ -12,7 +12,13 @@ var user = module.parent.require('./user'),
 
 const winston = module.parent.require('winston')
 const authenticationController = module.parent.require('./controllers/authentication')
-
+const constants = Object.freeze({
+  'name': '钉钉',
+  'admin': {
+    'icon': 'fa-users',
+    'route': '/plugins/dingtalk-login'
+  }
+})
 
 var Dingtalk = {};
 
@@ -211,30 +217,10 @@ Dingtalk.login = function(openid, nick, email, avatar, accessToken, refreshToken
 };
 Dingtalk.init = function(data, callback) {
   function renderAdmin (req, res) {
-    // res.render('admin/plugins/dingtalk-login', {
-    //   callbackURL: nconf.get('url') + '/auth/dingtalk/callback'
-    // })
     res.render('admin/plugins/dingtalk-login', {
       callbackURL: nconf.get('url') + '/auth/dingtalk/callback'
     })
   }
-  function renderDingtalkLoginQr (req, res) {
-    res.render('partials/dingtalk/loginqr')
-  }
-
-  function renderDingtalkLogin (req, res) {
-    res.render('partials/dingtalk/login')
-  }
-  // DEV Router
-  // data.router.get('/dingtalk/loginqr', data.middleware.buildHeader, renderDingtalkLoginQr);
-  // data.router.get('/dingtalk/login', data.middleware.buildHeader, renderDingtalkLogin);
-  // data.router.get('/auth/dingtalk/callback', data.middleware.authenticate, function(req, res) {
-  //   console.log('-----------------------------')
-  //   // Successful authentication, redirect home.
-  //   // data.middleware.authenticate('dingtalk', { failureRedirect: '/login' })
-  //   res.redirect('/');
-  // });
-  // data.router.get('/auth/dingtalk/callback', data.middleware.authenticate);
   data.router.get('/admin/plugins/dingtalk-login', data.middleware.admin.buildHeader, renderAdmin)
   data.router.get('/api/admin/plugins/dingtalk-login', renderAdmin)
   callback()
@@ -248,6 +234,17 @@ Dingtalk.getUidByDingtalkId = function(openid, callback) {
     callback(null, uid);
   });
 };
+
+
+Dingtalk.addMenuItem = function (header, callback) {
+  header.authentication.push({
+    'route': constants.admin.route,
+    'icon': constants.admin.icon,
+    'name': constants.name
+  })
+
+  callback(null, header)
+}
 
 Dingtalk.deleteUserData = function(uid, callback) {
   async.waterfall([
