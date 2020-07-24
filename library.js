@@ -4,7 +4,7 @@ var user = module.parent.require('./user'),
   meta = module.parent.require('./meta'),
   db = module.parent.require('../src/database'),
   passport = module.parent.require('passport'),
-  passportDingtalk = require('passport-dingding').Strategy,
+  passportDingtalk = require('./passport-dingtalk').Strategy,
   fs = module.parent.require('fs'),
   path = module.parent.require('path'),
   nconf = module.parent.require('nconf'),
@@ -19,17 +19,20 @@ Dingtalk.getStrategy = function(strategies, callback) {
       passport.use('dingtalk', new passportDingtalk({
         clientID: settings.id,
         clientSecret: settings.secret,
-        persistentTokenURL: nconf.get('url') + '/auth/dingtalk/callback',
+        callbackURL: 'http://local.lcc.com/auth/dingtalk/callback',
+        scope: 'snsapi_login',
         passReqToCallback: true
-        // callbackURL: 'http://local.lcc.com/auth/dingtalk/callback'
-      }, function(accessToken, refreshToken, profile, done) {
-        console.log(profile)
-          Dingtalk.login(profile.dingid, profile.nick, function(err, user) {
-            if (err) {
-              return done(err);
-            }
-            done(null, user);
-          });
+      }, function(ccessToken, refreshToken, params, profile, done) {
+        // nick: 'Eric',
+        // unionid: 'TiPdSzu8HLMv7IPlQEUBYRwiEiE',
+        // dingId: '$:LWCP_v1:$pUvHunDQAYkBLYhkAAxkviV+3FBxHxe2',
+        // openid: 'fuumyxdMFqFyygpZakODGwiEiE'
+        Dingtalk.login(profile.dingid, profile.nick, function(err, user) {
+          if (err) {
+            return done(err);
+          }
+          done(null, user);
+        });
       
       }))
     }
@@ -46,8 +49,8 @@ Dingtalk.getStrategy = function(strategies, callback) {
   callback(null, strategies);
 };
 
-Dingtalk.login = function(wxid, handle, callback) {
-  Dingtalk.getUidByDingtalkId(wxid, function(err, uid) {
+Dingtalk.login = function(dingid, handle, callback) {
+  Dingtalk.getUidByDingtalkId(dingid, function(err, uid) {
     if (err) {
       return callback(err);
     }
@@ -67,8 +70,8 @@ Dingtalk.login = function(wxid, handle, callback) {
         }
 
         // Save Dingtalk-specific information to the user
-        user.setUserField(uid, 'wxid', wxid);
-        db.setObjectField('wxid:uid', wxid, uid);
+        user.setUserField(uid, 'dingid', dingid);
+        db.setObjectField('dingid:uid', dingid, uid);
 
         callback(null, {
           uid: uid
@@ -96,7 +99,13 @@ Dingtalk.init = function(data, callback) {
   // DEV Router
   // data.router.get('/dingtalk/loginqr', data.middleware.buildHeader, renderDingtalkLoginQr);
   // data.router.get('/dingtalk/login', data.middleware.buildHeader, renderDingtalkLogin);
-
+  // data.router.get('/auth/dingtalk/callback', data.middleware.authenticate, function(req, res) {
+  //   console.log('-----------------------------')
+  //   // Successful authentication, redirect home.
+  //   // data.middleware.authenticate('dingtalk', { failureRedirect: '/login' })
+  //   res.redirect('/');
+  // });
+  // data.router.get('/auth/dingtalk/callback', data.middleware.authenticate);
   data.router.get('/admin/plugins/dingtalk-login', data.middleware.admin.buildHeader, renderAdmin)
   data.router.get('/api/admin/plugins/dingtalk-login', renderAdmin)
   callback()

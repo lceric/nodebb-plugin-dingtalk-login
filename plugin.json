@@ -1,11 +1,15 @@
 {
-    "id": "nodebb-plugin-dingtalk-login",
-    "name": "NodeBB dingtalk",
-    "description": "NodeBB Plugin that allows users to login/register via their dingtalk account.",
-    "library": "./library.js",
-	"hooks": [
-		{ "hook": "filter:auth.init", "method": "getStrategy" },
-		{ "hook": "filter:user.delete", "method": "deleteUserData" }
-	],
-	"templates": "./templates"
+  "id": "nodebb-plugin-dingtalk-login",
+  "name": "NodeBB dingtalk",
+  "description": "NodeBB Plugin that allows users to login/register via their dingtalk account.",
+  "library": "./library.js",
+  "hooks": [
+    { "hook": "filter:auth.init", "method": "getStrategy" },
+    { "hook": "filter:user.delete", "method": "deleteUserData" },
+    {
+      "hook": "static:app.load",
+      "method": "init"
+    }
+  ],
+  "templates": "./templates"
 }

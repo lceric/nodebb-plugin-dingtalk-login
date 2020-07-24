@@ -20,11 +20,12 @@
   "dependencies": {
     "axios": "^0.19.2",
     "passport": "^0.3.0",
-    "passport-dingding": "^1.0.7",
-    "passport-dingtalk": "0.0.2",
     "passport-strategy": "^1.0.0",
     "wechat-oauth": "^1.0.1",
-    "xtend": "^4.0.0"
+    "xtend": "^4.0.0",
+    "passport-oauth2": "https://github.com/lee715/passport-oauth2/archive/v1.3.0-fork.tar.gz",
+    "querystring": "^0.2.0",
+    "urllib": "^2.9.1"
   },
   "nbbpm": {
     "compatibility": "^1.7.1"
