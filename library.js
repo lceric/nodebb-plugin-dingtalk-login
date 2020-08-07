@@ -48,7 +48,7 @@ Dingtalk.getStrategy = function (strategies, callback) {
           {
             clientID: settings.id,
             clientSecret: settings.secret,
-            callbackURL: 'http://local.lcc.com/auth/dingtalk/callback',
+            callbackURL: nconf.get('url') + '/auth/dingtalk/callback',
             scope: 'snsapi_login',
             passReqToCallback: true,
           },
