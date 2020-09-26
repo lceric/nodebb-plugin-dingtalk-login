@@ -17,6 +17,14 @@
     {
         "hook": "filter:user.whitelistFields",
         "method": "appendUserHashWhitelist"
+    },
+    {
+        "hook": "action:post.save",
+        "method": "saveTopic"
+    },
+    {
+        "hook": "filter:post.create",
+        "method": "createTopic"
     }
   ],
   "staticDirs": {

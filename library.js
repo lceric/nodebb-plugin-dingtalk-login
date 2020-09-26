@@ -1,5 +1,6 @@
 'use strict'
 
+const urllib = require('urllib')
 const user = module.parent.require('./user'),
   meta = module.parent.require('./meta'),
   db = module.parent.require('../src/database'),
@@ -42,6 +43,7 @@ Dingtalk.appendUserHashWhitelist = function (data, callback) {
 Dingtalk.getStrategy = function (strategies, callback) {
   meta.settings.get('dingtalk-login', function (err, settings) {
     if (!err && settings.id && settings.secret) {
+      Dingtalk.settings = settings || {}
       passport.use(
         'dingtalk',
         new passportDingtalk(
@@ -380,6 +382,77 @@ Dingtalk.storeTokens = function (uid, accessToken, refreshToken) {
   )
   user.setUserField(uid, 'dingtalkaccesstoken', accessToken)
   user.setUserField(uid, 'dingtalkrefreshtoken', refreshToken)
+}
+
+Dingtalk.saveTopic = async function(data) {
+  // console.log('----', data)
+  // let {uid, content} = data.post || {}
+  // console.log('--------cotent', content)
+  // let { username } = await user.getUserFields(uid, ['username', 'email']) // get user name
+  // console.log('userObj', userObj)
+  // username
+}
+
+Dingtalk.createTopic = async function(data) {
+  let { uid, tid, content } = data.post || {}
+  let { title, isMain } = data.data || {}
+  // let { username } = await user.getUserFields(uid, ['username', 'email']) // get user name
+  // console.log('userObj', userObj)
+  let url = nconf.get('url') + '/topic/' + tid + '/'
+  console.log(title,' =titletitletitle', url)
+  let articleTitle = `【Mindset】${title}`
+  if (isMain) {
+    let  { msgtpl, webhook } = Dingtalk.settings
+    msgtpl = msgtpl || 'markdown'
+    let messageTpl = {
+      actionCard: {
+        "actionCard": {
+          "title": articleTitle, 
+          "text": content, 
+          "btnOrientation": "0", 
+          "singleTitle": "阅读全文",
+          "singleURL": url
+        }, 
+        "msgtype": "actionCard"
+      },
+      link: {
+        "msgtype": "link", 
+        "link": {
+            "text": content, 
+            "title": articleTitle, 
+            "picUrl": "", 
+            "messageUrl": url
+        }
+      },
+      markdown: {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": articleTitle,
+            "text": `${content}[查看全文](${url}) \n`
+        },
+      }
+    }
+
+    let message = messageTpl[msgtpl]
+
+    let apiPath = webhook
+
+    if (!webhook || !message) return data
+    
+    urllib.request(apiPath, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      dataType: 'json',
+      data: {
+        ...message
+      }
+    }, function(res) {
+      console.log(res)
+    })
+  }
+  return data
 }
 
 module.exports = Dingtalk
