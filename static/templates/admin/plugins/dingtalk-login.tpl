@@ -15,6 +15,14 @@
                 <label for="secret">App Secret</label>
                 <input type="text" name="secret" title="App Secret" class="form-control" placeholder="App Secret" />
             </div>
+            <div class="form-group">
+                <label for="webhook">webhook</label>
+                <input type="text" name="webhook" title="App webhook" class="form-control" placeholder="App webhook" />
+            </div>
+            <div class="form-group">
+                <label for="msgtpl">推送消息模板 <small>markdown, actionCard, link</small>，默认markdown</label>
+                <input type="text" name="msgtpl" title="App msgtpl" class="form-control" placeholder="App msgtpl" value="markdown"/>
+            </div>
             <div class="form-group alert alert-warning">
                 <label for="callback">Your NodeBB&apos;s "Authorization callback URL"</label>
                 <input type="text" id="callback" title="Authorization callback URL" class="form-control" value="{callbackURL}" readonly />

@@ -32,7 +32,7 @@
      var queryObj = parseQuery(search)
      console.log(queryObj.code, $)
      $.ajax({
-       url:'/api/dingtalk/access',
+       url:'/api/dingtalk/getCode',
        method: 'get',
        data: { code: queryObj.code },
        success: function (res) {
