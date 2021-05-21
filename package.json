@@ -14,6 +14,11 @@
     "name": "Eric",
     "email": "18709270892@163.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lceric/nodebb-plugin-dingtalk-login.git"
+  },
+  "homepage": "hhttps://github.com/lceric/nodebb-plugin-dingtalk-login",
   "license": "MIT",
   "readme": "",
   "readmeFilename": "README.md",
